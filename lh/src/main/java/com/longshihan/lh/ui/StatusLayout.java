@@ -43,6 +43,9 @@ public class StatusLayout extends FrameLayout {
     private ImageView emptyImageView;
     private ProgressBar progressBar;
 
+    //一个接口的三个实现，给父布局
+    private SetLoadDataListener mSetLoadDataListener;
+
     private boolean isdialog;//判断是否要弹出框显示
     private boolean isPositionView;
     private View mPositionView;
@@ -66,13 +69,9 @@ public class StatusLayout extends FrameLayout {
 
     private void init(Context context, AttributeSet attrs) {
         parseAttrs(context, attrs);
-
         emptyView.setVisibility(View.GONE);
-
         errorView.setVisibility(View.GONE);
-
         progressView.setVisibility(View.GONE);
-
         currentShowingView = contentView;
     }
 
@@ -169,6 +168,7 @@ public class StatusLayout extends FrameLayout {
         private boolean isDialog;
         private boolean isPositionView;
         private View mPositionView;
+        private SetLoadDataListener mSetLoadDataListener;
 
         public BuildConfig(Context context) {
             this.mContext = context;
@@ -220,6 +220,11 @@ public class StatusLayout extends FrameLayout {
          */
         public BuildConfig setPositionView(View mPositionView) {
             this.mPositionView = mPositionView;
+            return this;
+        }
+
+        public BuildConfig setClickListener(SetLoadDataListener loadDataListener) {
+            this.mSetLoadDataListener = loadDataListener;
             return this;
         }
     }
