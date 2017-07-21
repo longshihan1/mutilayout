@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="StatusLayout">
+        <attr name="errorDrawable" format="reference"/>
+        <attr name="emptyDrawable" format="reference"/>
+        <attr name="progressView" format="reference"/>
+        <attr name="errorText" format="string"/>
+        <attr name="emptyText" format="string"/>
+        <attr name="progressText" format="string"/>
+    </declare-styleable>
+</resources>
