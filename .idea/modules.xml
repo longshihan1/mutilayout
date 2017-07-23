@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TestLH.iml" filepath="$PROJECT_DIR$/TestLH.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MutilLayout.iml" filepath="$PROJECT_DIR$/MutilLayout.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/lh/lh.iml" filepath="$PROJECT_DIR$/lh/lh.iml" />
     </modules>
