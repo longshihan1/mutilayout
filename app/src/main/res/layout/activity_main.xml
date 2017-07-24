@@ -6,6 +6,7 @@
     android:id="@+id/statuslayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#555555"
     tools:context="com.longshihan.testlh.MainActivity">
 
     <TextView
@@ -15,7 +16,15 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="ssssssssssssss"
         />
 
+    <ImageView
+        android:id="@+id/imageempty"
+        android:layout_marginTop="300dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@mipmap/ic_launcher"
+        />
 </com.longshihan.lh.ui.StatusLayout>

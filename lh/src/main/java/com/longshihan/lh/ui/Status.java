@@ -14,5 +14,7 @@ public class Status {
     public final static int BUTTONCLICK=0x10;
     public final static int CONTENTCLICK=0x11;
 
+    public final static int ID_TYPE=0x0001;
+
 
 }

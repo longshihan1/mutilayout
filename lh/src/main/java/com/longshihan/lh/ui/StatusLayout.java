@@ -11,11 +11,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.longshihan.lh.R;
 
@@ -28,7 +29,7 @@ import java.util.List;
  * @des
  */
 
-//TODO: (1)实现对广义上的加载布局（2）加载弹窗上的布局（3） 加载指定位置上的布局
+//TODO: (1)实现对广义上的加载布局（2）加载弹窗上的布局（3） 加载指定位置上的布局(4) 静态布局
 public class StatusLayout extends FrameLayout {
     private Context mContext;
     LayoutInflater inflater;
@@ -37,6 +38,9 @@ public class StatusLayout extends FrameLayout {
     private View errorView;//错误布局
     private View progressView;//加载中布局
     private View currentShowingView;//当前布局
+    private View mflipperview;
+    private View mStubView;
+    private ViewStub mGuideView;
 
     private View emptyContentView;
     private View errorContentView;
@@ -50,12 +54,20 @@ public class StatusLayout extends FrameLayout {
     private ImageView emptyImageView;
     private ProgressBar progressBar;
 
+    private ViewFlipper mViewFlipper;
+
+    private CustomStateOptions emptyoptions;
+    private CustomStateOptions erroroptions;
+    private CustomStateOptions progressoptions;
+    private CustomGuildeOptions guildeoptions;
+
 
     //一个接口的三个实现，给父布局
     private SetLoadDataListener mSetLoadDataListener;
 
     private boolean isdialog;//判断是否要弹出框显示
     private boolean isPositionView;
+    private boolean isguilde;
     private View mPositionView;
     private Dialog mDialog;
     private List<View> usedviews = new ArrayList<>(2);
@@ -85,6 +97,8 @@ public class StatusLayout extends FrameLayout {
         errorView.setVisibility(View.GONE);
         progressView.setVisibility(View.GONE);
         currentShowingView = contentView;
+
+        //mGuideView=
     }
 
     /**
@@ -108,6 +122,10 @@ public class StatusLayout extends FrameLayout {
         errorImageView = (ImageView) errorView.findViewById(R.id.errorimage);
         // TODO: 2017/7/23 加载中
         progressView = inflater.inflate(R.layout.progress, null);
+
+        // TODO: 2017/7/24 加载引导view
+        mflipperview = inflater.inflate(R.layout.viewstubflipper, null);
+        mGuideView = (ViewStub) mflipperview.findViewById(R.id.stubid);
     }
 
     /**
@@ -116,12 +134,19 @@ public class StatusLayout extends FrameLayout {
      * @param config
      */
     public void setLayoutConfig(BuildConfig config) {
-        this.emptyView = config.mEmptyView;
-        this.errorView = config.mErrorView;
-        this.progressView = config.mLoadingErrorView;
+        if (config.mEmptyView!=null) {
+            this.emptyView = config.mEmptyView;
+        }
+        if (config.mErrorView!=null) {
+            this.errorView = config.mErrorView;
+        }
+        if (config.mLoadingErrorView!=null) {
+            this.progressView = config.mLoadingErrorView;
+        }
         this.isdialog = config.isDialog;
         this.isPositionView = config.isPositionView;
         this.mPositionView = config.mPositionView;
+        this.isguilde = config.isguild;
     }
 
     /**
@@ -131,6 +156,51 @@ public class StatusLayout extends FrameLayout {
      */
     public void showView(CustomStateOptions options) {
         showCustomview(options);
+    }
+
+    public void showGuildeView(final CustomGuildeOptions options) {
+        if (mStubView == null) {
+            mStubView = mGuideView.inflate();
+            mViewFlipper = (ViewFlipper) mStubView.findViewById(R.id.glideviewflipper);
+        }
+        guildeoptions = options;
+        if (mViewFlipper.getChildCount() == 0) {
+            for (int i = 0; i < options.getViews().size(); i++) {
+                View view = options.getViews().get(i);
+                mViewFlipper.addView(view);
+                final int finalI = i;
+                View currentid;
+                if (view.getTag(R.id.ids) != null) {
+                    try {
+                        currentid = view.findViewById(Integer.valueOf(view.getTag(R.id.ids).toString()));
+                    } catch (Exception e) {
+                        currentid = view;
+                    }
+                } else {
+                    currentid = view;
+                }
+                currentid.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (finalI == options.getViews().size() - 1) {
+                            cleanallView();
+                        } else {
+                            mViewFlipper.showNext();
+                        }
+                    }
+                });
+            }
+        }
+
+
+    }
+
+    public void showGuideView() {
+        showGuildeView(guildeoptions);
+        cleanShowView();
+        addView(mflipperview);
+        usedviews.add(mflipperview);
+        mflipperview.setVisibility(VISIBLE);
     }
 
     private void showCustomview(CustomStateOptions options) {
@@ -163,9 +233,11 @@ public class StatusLayout extends FrameLayout {
         }
     }
 
+
     private void setCustomLayoutOption(CustomStateOptions options, ViewGroup.LayoutParams
             layoutParams) {
         if (options.isEmpty()) {
+            emptyoptions = options;
             if (options.getViewRes() != 0) {
                 emptyView = inflater.inflate(options.getViewRes(), null);
             } else {
@@ -174,8 +246,8 @@ public class StatusLayout extends FrameLayout {
             if (layoutParams != null) {
                 emptyView.setLayoutParams(layoutParams);
             }
-            showContentParentView(emptyView);
         } else if (options.isError()) {
+            erroroptions = options;
             if (options.getViewRes() != 0) {
                 errorView = inflater.inflate(options.getViewRes(), null);
             } else {
@@ -184,19 +256,23 @@ public class StatusLayout extends FrameLayout {
             if (layoutParams != null) {
                 errorView.setLayoutParams(layoutParams);
             }
-            showContentParentView(errorView);
+
         } else if (options.isLoading()) {
+            progressoptions = options;
             if (options.getViewRes() != 0) {
                 progressView = inflater.inflate(options.getViewRes(), null);
             }
             if (layoutParams != null) {
                 progressView.setLayoutParams(layoutParams);
             }
-            showContentParentView(emptyView);
+
         }
     }
 
     private void showViewOption(final CustomStateOptions options, int type) {
+        if (mOnClickListener != null && mOnClickListener == null) {
+            setOnClick(options.getButtonClickListener());
+        }
         switch (type) {
             case Status.EMPTY_VIEW:
                 if (options.getImageRes() != 0) {
@@ -214,9 +290,7 @@ public class StatusLayout extends FrameLayout {
                         emptyContentView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Log.d("TAG","点击");
-                                Toast.makeText(mContext, "点击", Toast.LENGTH_SHORT).show();
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -224,7 +298,7 @@ public class StatusLayout extends FrameLayout {
                         emptyTextView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -232,7 +306,7 @@ public class StatusLayout extends FrameLayout {
                         emptyImageView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -240,7 +314,7 @@ public class StatusLayout extends FrameLayout {
                         emptyTextView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -263,7 +337,8 @@ public class StatusLayout extends FrameLayout {
                         errorContentView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                Log.d("TEXT", "测试点击");
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -271,7 +346,7 @@ public class StatusLayout extends FrameLayout {
                         errorTextView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -279,7 +354,7 @@ public class StatusLayout extends FrameLayout {
                         errorImageView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -287,7 +362,7 @@ public class StatusLayout extends FrameLayout {
                         errorTextView.setOnClickListener(new OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                options.getButtonClickListener().onClick(v);
+                                mOnClickListener.onClick(v);
                             }
                         });
                         break;
@@ -304,15 +379,30 @@ public class StatusLayout extends FrameLayout {
      * 加载空载view，但事件处理全在上层
      */
     public void showEmptyView() {
-        showCustomview(new CustomStateOptions().empty());
+        if (emptyoptions != null) {
+            showCustomview(emptyoptions);
+        } else {
+            showCustomview(new CustomStateOptions().empty());
+        }
+        showContentParentView(emptyView);
     }
 
     public void showErrorView() {
-        showCustomview(new CustomStateOptions().error());
+        if (erroroptions != null) {
+            showCustomview(erroroptions);
+        } else {
+            showCustomview(new CustomStateOptions().error());
+        }
+        showContentParentView(errorView);
     }
 
     public void showLoadView() {
-        showCustomview(new CustomStateOptions().loading());
+        if (progressoptions != null) {
+            showCustomview(progressoptions);
+        } else {
+            showCustomview(new CustomStateOptions().loading());
+        }
+        showContentParentView(progressView);
     }
 
     /**
@@ -329,6 +419,14 @@ public class StatusLayout extends FrameLayout {
         usedviews.add(view);
         addView(view);
         view.setVisibility(VISIBLE);
+    }
+
+    public void cleanShowView() {
+        if (usedviews.size() > 0) {
+            for (int i = 0; i < usedviews.size(); i++) {
+                removeView(usedviews.get(i));
+            }
+        }
     }
 
     public void cleanallView() {
@@ -382,5 +480,17 @@ public class StatusLayout extends FrameLayout {
 
     public void setProgressBar(ProgressBar progressBar) {
         this.progressBar = progressBar;
+    }
+
+    private View.OnClickListener mOnClickListener;
+
+    private void setOnClick(View.OnClickListener mClick) {
+        mOnClickListener = mClick;
+    }
+
+    private View.OnClickListener mGuildeOnClickListener;
+
+    private void setGuildeOnClick(View.OnClickListener mClick) {
+        mGuildeOnClickListener = mClick;
     }
 }

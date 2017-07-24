@@ -16,6 +16,16 @@ public class BuildConfig {
     public boolean isDialog;
     public boolean isPositionView;
     public View mPositionView;
+    public boolean isguild;
+
+    public boolean isguild() {
+        return isguild;
+    }
+
+    public BuildConfig setIsguild(boolean isguild) {
+        this.isguild = isguild;
+        return this;
+    }
 
     public BuildConfig(Context context) {
         this.mContext = context;
