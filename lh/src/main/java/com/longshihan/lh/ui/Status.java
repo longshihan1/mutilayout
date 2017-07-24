@@ -1,8 +1,6 @@
 package com.longshihan.lh.ui;
 
-/**
- * Created by longshihan on 2017/7/23.
- */
+
 
 public class Status {
     public final static int EMPTY_VIEW=0x00;

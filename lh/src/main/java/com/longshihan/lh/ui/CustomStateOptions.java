@@ -5,9 +5,6 @@ import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.view.View;
 
-/**
- * 定制view
- */
 
 public class CustomStateOptions {
     @DrawableRes

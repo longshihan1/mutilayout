@@ -12,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author longshihan
- * @time 2017/7/24 11:43
- * @des
- */
-
 public class CustomGuildeOptions {
     private List<View> mViews;
     private Context mContext;
